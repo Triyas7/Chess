@@ -1,5 +1,22 @@
 import tkinter as tk
 
+# all variables
+root = tk.Tk()
+HEIGHT = WIDTH = 600
+SQUARE_SIZE = HEIGHT // 8
+
+root.title("Chess")
+root.geometry("600x600")
+
+canvas = tk.Canvas(root, width=600, height=600)
+canvas.pack()
+
+# selected piece
+selected_piece = None
+# crrent turn color
+current_turn = "white"
+
+
 # Unicode hex symbols for each piece type and color
 SYMBOLS = {
     "white": {
@@ -27,7 +44,7 @@ class Piece():
         y = self.row * sq_size + sq_size / 2
         canvas.create_text(x, y, text=self.symbol, font=("Arial", 48))
 
-# ALL PIECES
+# ALL PIECES VARIABLES
 # white pieces
 white_rook = Piece(0, 0, "rook", "white")
 white_knight = Piece(0, 1, "knight", "white")
@@ -99,6 +116,7 @@ def draw_board(canvas, square_size):
             color = light if (col + row) % 2 == 0 else dark
             canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline="")
 
+
 # get piece
 def get_piece_at(row, col):
     for piece in pieces:
@@ -106,11 +124,10 @@ def get_piece_at(row, col):
             return piece
     return None
 
-selected_piece = None
 
 # handle mouse click event
 def on_click(event, canvas, square_size):
-    global selected_piece
+    global selected_piece, current_turn
 
     col = event.x // square_size
     row = event.y // square_size
@@ -118,11 +135,19 @@ def on_click(event, canvas, square_size):
     # First click: Pick up a piece
     if selected_piece is None:
         clicked_piece = get_piece_at(row, col)
-        if clicked_piece is not None:
-            selected_piece = clicked_piece
-            print(f"Selected: {selected_piece.piece_name} at ({row}, {col})")
-        else:
+
+        if clicked_piece is None:
             print(f"No piece at ({row}, {col})")
+            return
+        
+        # first turn check and switch turn
+        if clicked_piece.color != current_turn:
+            print(f"It's {current_turn} move")
+            return
+
+        selected_piece = clicked_piece
+        print(f"Selected: {selected_piece.piece_name} at ({row}, {col})")
+
 
     # Second click: Move the selected piece to the new square
     else:
@@ -134,8 +159,8 @@ def on_click(event, canvas, square_size):
 
             # check you can't captured your own piece
             if target_piece.color == selected_piece.color:
-                print("You cannot capture your own piece.")
-                target_piece = None
+                selected_piece = get_piece_at(row, col)
+                print(f"Your piece selection is changed to {row,col}.")
                 return
 
             # if the color is different then capture
@@ -153,6 +178,9 @@ def on_click(event, canvas, square_size):
         selected_piece.row = row
         selected_piece.col = col
 
+        # change the present move piece color
+        current_turn = "black" if current_turn == "white" else "white"
+
         # Reset the selected piece 
         selected_piece = None
 
@@ -163,21 +191,14 @@ def on_click(event, canvas, square_size):
         chess_pieces.draw_pieces()
 
 
-
 def main():
-    root = tk.Tk()
-    HEIGHT = WIDTH = 600
-    SQUARE_SIZE = HEIGHT // 8
-
-    root.title("Chess")
-    root.geometry("600x600")
-
-    canvas = tk.Canvas(root, width=600, height=600)
-    canvas.pack()
-    canvas.bind("<Button-1>", lambda event: on_click(event, canvas, SQUARE_SIZE))
-
+    # draw board on screen
     draw_board(canvas, SQUARE_SIZE)
 
+    # on click function
+    canvas.bind("<Button-1>", lambda event: on_click(event, canvas, SQUARE_SIZE))
+
+    # draw all pieces in the board
     chess_pieces = ChessPieces(canvas, SQUARE_SIZE)
     chess_pieces.draw_pieces()
 
