@@ -126,6 +126,29 @@ def on_click(event, canvas, square_size):
 
     # Second click: Move the selected piece to the new square
     else:
+        # target pieces
+        target_piece = get_piece_at(row, col)
+
+        # check if there already a piece exist
+        if target_piece is not None:
+
+            # check you can't captured your own piece
+            if target_piece.color == selected_piece.color:
+                print("You cannot capture your own piece.")
+                target_piece = None
+                return
+
+            # if the color is different then capture
+            else:
+                print(f"Captured: {target_piece.color} {target_piece.piece_name} by {selected_piece.color} {selected_piece.piece_name})")
+                pieces.remove(target_piece)
+                selected_piece.row = row
+                selected_piece.col = col
+
+            # reset the target piece
+            target_piece = None
+
+        # move pieces around the board
         print(f"Moving {selected_piece.piece_name} to ({row}, {col})")
         selected_piece.row = row
         selected_piece.col = col
