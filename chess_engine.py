@@ -154,6 +154,19 @@ def rock_move_valid(from_row, from_col, to_row, to_col):
         return True
 
 
+# Knight Move Validation
+def knight_move_valid(from_row, from_col, to_row, to_col):
+    row_diff = abs(from_row - to_row)
+    col_diff = abs(from_col - to_col)
+
+    if (row_diff == 2 and col_diff == 1):
+        return True
+    elif (row_diff == 1 and col_diff == 2):
+        return True
+    else:
+        return False
+
+
 # handle mouse click event
 def on_click(event, canvas, square_size):
     global selected_piece, current_turn
@@ -190,25 +203,30 @@ def on_click(event, canvas, square_size):
             print(f"Your piece selection is changed to {row,col}.")
             return
 
-        # 2. Movement validation (runs for both empty squares and captures)
+        # rook move validation 
         if selected_piece.piece_name == "rook":
             if not rock_move_valid(selected_piece.row, selected_piece.col, row, col):
                 print("Invalid rook move.")
                 return
+        # knight move validation 
+        elif selected_piece.piece_name == "knight":
+            if not knight_move_valid(selected_piece.row, selected_piece.col, row, col):
+                print("Invalid knight move.")
+                return
 
-        # 3. Capture opponent piece if present
+        # Capture opponent piece if present
         if target_piece is not None:
             print(
                 f"Captured: {target_piece.color} {target_piece.piece_name} by {selected_piece.color} {selected_piece.piece_name}"
             )
             pieces.remove(target_piece)
 
-        # 4. Update position
+        # Update position
         print(f"Moving {selected_piece.piece_name} to ({row}, {col})")
         selected_piece.row = row
         selected_piece.col = col
 
-        # 5. Switch turns, clear selection, and redraw
+        # Switch turns, clear selection, and redraw
         current_turn = "black" if current_turn == "white" else "white"
         selected_piece = None
 
