@@ -198,17 +198,21 @@ def queen_move_valid(from_row, from_col, to_row, to_col):
 
 
 # king move validation
-def king_move_valid(from_row, from_col, to_row, to_col):
+def king_move_valid(from_row, from_col, to_row, to_col, color=None):
     if from_row == to_row and from_col == to_col:
         return False
-    
+
     row_diff = abs(from_row - to_row)
     col_diff = abs(from_col - to_col)
 
-    if row_diff <= 1 and col_diff <= 1:
-        return True
+    if row_diff > 1 or col_diff > 1:
+        return False
 
-    return False
+    target_piece = get_piece_at(to_row, to_col)
+    if target_piece is not None and color is not None and target_piece.color == color:
+        return False
+
+    return True
 
 
 # pawn move validation
@@ -216,33 +220,59 @@ def pawn_move_valid(from_row, from_col, to_row, to_col, color):
     if from_row == to_row and from_col == to_col:
         return False
 
-    direction = 1 if color == "white" else -1
+    if color == "white":
+        direction = 1
+        start_row = 1
+    elif color == "black":
+        direction = -1
+        start_row = 6
+    else:
+        return False
+
     row_diff = to_row - from_row
     col_diff = abs(to_col - from_col)
 
-    # for white pawn
-    if color == "white":
-        if row_diff == direction and col_diff == 0 and get_piece_at(to_row, to_col) is None:
+    if from_col == to_col:
+        if row_diff == direction and get_piece_at(to_row, to_col) is None:
             return True
-        elif row_diff == 2 * direction and col_diff == 0 and from_row == 1:
-            if get_piece_at(to_row, to_col) is None and get_piece_at(from_row + direction, from_col) is None:
-                return True
-        elif row_diff == direction and col_diff == 1:
-            target_piece = get_piece_at(to_row, to_col)
-            if target_piece is not None and target_piece.color == "black":
-                return True
-    # for black pawn
-    elif color == "black":
-        if row_diff == direction and col_diff == 0 and get_piece_at(to_row, to_col) is None:
+
+        if from_row == start_row and row_diff == 2 * direction:
+            if get_piece_at(from_row + direction, from_col) is not None:
+                return False
+            if get_piece_at(to_row, to_col) is not None:
+                return False
             return True
-        elif row_diff == 2 * direction and col_diff == 0 and from_row == 6:
-            if get_piece_at(to_row, to_col) is None and get_piece_at(from_row + direction, from_col) is None:
-                return True
-        elif row_diff == direction and col_diff == 1:
-            target_piece = get_piece_at(to_row, to_col)
-            if target_piece is not None and target_piece.color == "white":
-                return True
-            
+
+        return False
+
+    if col_diff == 1 and row_diff == direction:
+        target_piece = get_piece_at(to_row, to_col)
+        if target_piece is not None and target_piece.color != color:
+            return True
+
+    return False
+
+
+def is_valid_move(piece, to_row, to_col):
+    if piece is None:
+        return False
+
+    from_row = piece.row
+    from_col = piece.col
+
+    if piece.piece_name == "rook":
+        return rook_move_valid(from_row, from_col, to_row, to_col)
+    if piece.piece_name == "knight":
+        return knight_move_valid(from_row, from_col, to_row, to_col)
+    if piece.piece_name == "bishop":
+        return bishop_move_valid(from_row, from_col, to_row, to_col)
+    if piece.piece_name == "queen":
+        return queen_move_valid(from_row, from_col, to_row, to_col)
+    if piece.piece_name == "king":
+        return king_move_valid(from_row, from_col, to_row, to_col, piece.color)
+    if piece.piece_name == "pawn":
+        return pawn_move_valid(from_row, from_col, to_row, to_col, piece.color)
+
     return False
 
 # handle mouse click event
@@ -276,36 +306,13 @@ def on_click(event, canvas, square_size):
 
         # check if there already a piece exist
         if target_piece is not None and target_piece.color == selected_piece.color:
-            # check you can't captured your own piece
             selected_piece = target_piece
             print(f"Your piece selection is changed to {row,col}.")
             return
 
-        # rook move validation 
-        if selected_piece.piece_name == "rook":
-            if not rook_move_valid(selected_piece.row, selected_piece.col, row, col):
-                print("Invalid rook move.")
-                return
-        # knight move validation 
-        elif selected_piece.piece_name == "knight":
-            if not knight_move_valid(selected_piece.row, selected_piece.col, row, col):
-                print("Invalid knight move.")
-                return
-        # bishop move validation 
-        elif selected_piece.piece_name == "bishop":
-            if not bishop_move_valid(selected_piece.row, selected_piece.col, row, col):
-                print("Invalid bishop move.")
-                return
-        # queen move validation 
-        elif selected_piece.piece_name == "queen":
-            if not queen_move_valid(selected_piece.row, selected_piece.col, row, col):
-                print("Invalid queen move.")
-                return
-        # king move validation
-        elif selected_piece.piece_name == "king":
-            if not king_move_valid(selected_piece.row, selected_piece.col, row, col):
-                print("Invalid king move.")
-                return
+        if not is_valid_move(selected_piece, row, col):
+            print(f"Invalid {selected_piece.piece_name} move.")
+            return
 
         # Capture opponent piece if present
         if target_piece is not None:
