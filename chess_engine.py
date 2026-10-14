@@ -197,6 +197,20 @@ def queen_move_valid(from_row, from_col, to_row, to_col):
     return rook_move_valid(from_row, from_col, to_row, to_col) or bishop_move_valid(from_row, from_col, to_row, to_col)
 
 
+# king move validation
+def king_move_valid(from_row, from_col, to_row, to_col):
+    if from_row == to_row and from_col == to_col:
+        return False
+    
+    row_diff = abs(from_row - to_row)
+    col_diff = abs(from_col - to_col)
+
+    if row_diff <= 1 and col_diff <= 1:
+        return True
+    else:
+        return False
+
+
 # handle mouse click event
 def on_click(event, canvas, square_size):
     global selected_piece, current_turn
@@ -252,6 +266,11 @@ def on_click(event, canvas, square_size):
         elif selected_piece.piece_name == "queen":
             if not queen_move_valid(selected_piece.row, selected_piece.col, row, col):
                 print("Invalid queen move.")
+                return
+        # king move validation
+        elif selected_piece.piece_name == "king":
+            if not king_move_valid(selected_piece.row, selected_piece.col, row, col):
+                print("Invalid king move.")
                 return
 
         # Capture opponent piece if present
