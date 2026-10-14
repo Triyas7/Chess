@@ -207,9 +207,43 @@ def king_move_valid(from_row, from_col, to_row, to_col):
 
     if row_diff <= 1 and col_diff <= 1:
         return True
-    else:
+
+    return False
+
+
+# pawn move validation
+def pawn_move_valid(from_row, from_col, to_row, to_col, color):
+    if from_row == to_row and from_col == to_col:
         return False
 
+    direction = 1 if color == "white" else -1
+    row_diff = to_row - from_row
+    col_diff = abs(to_col - from_col)
+
+    # for white pawn
+    if color == "white":
+        if row_diff == direction and col_diff == 0 and get_piece_at(to_row, to_col) is None:
+            return True
+        elif row_diff == 2 * direction and col_diff == 0 and from_row == 1:
+            if get_piece_at(to_row, to_col) is None and get_piece_at(from_row + direction, from_col) is None:
+                return True
+        elif row_diff == direction and col_diff == 1:
+            target_piece = get_piece_at(to_row, to_col)
+            if target_piece is not None and target_piece.color == "black":
+                return True
+    # for black pawn
+    elif color == "black":
+        if row_diff == direction and col_diff == 0 and get_piece_at(to_row, to_col) is None:
+            return True
+        elif row_diff == 2 * direction and col_diff == 0 and from_row == 6:
+            if get_piece_at(to_row, to_col) is None and get_piece_at(from_row + direction, from_col) is None:
+                return True
+        elif row_diff == direction and col_diff == 1:
+            target_piece = get_piece_at(to_row, to_col)
+            if target_piece is not None and target_piece.color == "white":
+                return True
+            
+    return False
 
 # handle mouse click event
 def on_click(event, canvas, square_size):
