@@ -13,7 +13,7 @@ canvas.pack()
 
 # selected piece
 selected_piece = None
-# crrent turn color
+# current turn color
 current_turn = "white"
 
 
@@ -103,8 +103,8 @@ class ChessPieces():
 
 # draw chessboard
 def draw_board(canvas, square_size):
-    light = "#f0d9b5"
-    dark = "#b58863"
+    light = "#EBECD0"
+    dark = "#739552"
 
     for row in range(8):
         for col in range(8):
@@ -123,6 +123,35 @@ def get_piece_at(row, col):
         if piece.row == row and piece.col == col:
             return piece
     return None
+
+
+# rock move validation
+def rock_move_valid(from_row, from_col, to_row, to_col):
+    if from_row != to_row and from_col != to_col:
+        return False
+    
+    if from_row == to_row and from_col == to_col:
+        return False
+
+    # Horizontal move (same row, different column)
+    if from_row == to_row and from_col != to_col:
+        start_row = min(from_col, to_col) + 1
+        end_row = max(from_col, to_col) - 1
+        # check if there any piece in the middle of the way
+        for col in range(start_row, end_row):
+            if get_piece_at(from_row, col) is not None:
+                return False
+        return True
+
+    # Vertical move (different row, same column)
+    elif from_row != to_row and from_col == to_col:
+        start_col = min(from_row, to_row) + 1
+        end_col = max(from_row, to_row) - 1
+        # check if there any piece in the middle of the way
+        for row in range(start_col, end_col):
+            if get_piece_at(row, from_col) is not None:
+                return False
+        return True
 
 
 # handle mouse click event
@@ -155,37 +184,35 @@ def on_click(event, canvas, square_size):
         target_piece = get_piece_at(row, col)
 
         # check if there already a piece exist
-        if target_piece is not None:
-
+        if target_piece is not None and target_piece.color == selected_piece.color:
             # check you can't captured your own piece
-            if target_piece.color == selected_piece.color:
-                selected_piece = get_piece_at(row, col)
-                print(f"Your piece selection is changed to {row,col}.")
+            selected_piece = target_piece
+            print(f"Your piece selection is changed to {row,col}.")
+            return
+
+        # 2. Movement validation (runs for both empty squares and captures)
+        if selected_piece.piece_name == "rook":
+            if not rock_move_valid(selected_piece.row, selected_piece.col, row, col):
+                print("Invalid rook move.")
                 return
 
-            # if the color is different then capture
-            else:
-                print(f"Captured: {target_piece.color} {target_piece.piece_name} by {selected_piece.color} {selected_piece.piece_name})")
-                pieces.remove(target_piece)
-                selected_piece.row = row
-                selected_piece.col = col
+        # 3. Capture opponent piece if present
+        if target_piece is not None:
+            print(
+                f"Captured: {target_piece.color} {target_piece.piece_name} by {selected_piece.color} {selected_piece.piece_name}"
+            )
+            pieces.remove(target_piece)
 
-            # reset the target piece
-            target_piece = None
-
-        # move pieces around the board
+        # 4. Update position
         print(f"Moving {selected_piece.piece_name} to ({row}, {col})")
         selected_piece.row = row
         selected_piece.col = col
 
-        # change the present move piece color
+        # 5. Switch turns, clear selection, and redraw
         current_turn = "black" if current_turn == "white" else "white"
-
-        # Reset the selected piece 
         selected_piece = None
 
-        # Redraw the updated board
-        canvas.delete('all')
+        canvas.delete("all")
         draw_board(canvas, square_size)
         chess_pieces = ChessPieces(canvas, square_size)
         chess_pieces.draw_pieces()
