@@ -167,6 +167,25 @@ def knight_move_valid(from_row, from_col, to_row, to_col):
         return False
 
 
+# Bishop Move Validation
+def bishop_move_valid(from_row, from_col, to_row, to_col):
+    row_diff = abs(from_row - to_row)
+    col_diff = abs(from_col - to_col)
+    # row and col step calculation
+    row_step = 1 if to_row > from_row else -1
+    col_step = 1 if to_col > from_col else -1
+
+    if row_diff == col_diff and row_diff > 0:
+        for i in range(1, row_diff):
+            check_row = from_row + i * row_step
+            check_col = from_col + i * col_step
+
+            if get_piece_at(check_row, check_col) is not None:
+                return False
+
+        return True
+
+
 # handle mouse click event
 def on_click(event, canvas, square_size):
     global selected_piece, current_turn
@@ -212,6 +231,11 @@ def on_click(event, canvas, square_size):
         elif selected_piece.piece_name == "knight":
             if not knight_move_valid(selected_piece.row, selected_piece.col, row, col):
                 print("Invalid knight move.")
+                return
+        # bishop move validation 
+        elif selected_piece.piece_name == "bishop":
+            if not bishop_move_valid(selected_piece.row, selected_piece.col, row, col):
+                print("Invalid bishop move.")
                 return
 
         # Capture opponent piece if present
