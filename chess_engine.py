@@ -125,8 +125,8 @@ def get_piece_at(row, col):
     return None
 
 
-# rock move validation
-def rock_move_valid(from_row, from_col, to_row, to_col):
+# rook move validation
+def rook_move_valid(from_row, from_col, to_row, to_col):
     if from_row != to_row and from_col != to_col:
         return False
     
@@ -156,6 +156,9 @@ def rock_move_valid(from_row, from_col, to_row, to_col):
 
 # Knight Move Validation
 def knight_move_valid(from_row, from_col, to_row, to_col):
+    if from_row == to_row and from_col == to_col:
+        return False
+    
     row_diff = abs(from_row - to_row)
     col_diff = abs(from_col - to_col)
 
@@ -169,6 +172,9 @@ def knight_move_valid(from_row, from_col, to_row, to_col):
 
 # Bishop Move Validation
 def bishop_move_valid(from_row, from_col, to_row, to_col):
+    if from_row == to_row and from_col == to_col:
+        return False
+    
     row_diff = abs(from_row - to_row)
     col_diff = abs(from_col - to_col)
     # row and col step calculation
@@ -184,6 +190,11 @@ def bishop_move_valid(from_row, from_col, to_row, to_col):
                 return False
 
         return True
+
+
+# Queen Move Validation
+def queen_move_valid(from_row, from_col, to_row, to_col):
+    return rook_move_valid(from_row, from_col, to_row, to_col) or bishop_move_valid(from_row, from_col, to_row, to_col)
 
 
 # handle mouse click event
@@ -224,7 +235,7 @@ def on_click(event, canvas, square_size):
 
         # rook move validation 
         if selected_piece.piece_name == "rook":
-            if not rock_move_valid(selected_piece.row, selected_piece.col, row, col):
+            if not rook_move_valid(selected_piece.row, selected_piece.col, row, col):
                 print("Invalid rook move.")
                 return
         # knight move validation 
@@ -236,6 +247,11 @@ def on_click(event, canvas, square_size):
         elif selected_piece.piece_name == "bishop":
             if not bishop_move_valid(selected_piece.row, selected_piece.col, row, col):
                 print("Invalid bishop move.")
+                return
+        # queen move validation 
+        elif selected_piece.piece_name == "queen":
+            if not queen_move_valid(selected_piece.row, selected_piece.col, row, col):
+                print("Invalid queen move.")
                 return
 
         # Capture opponent piece if present
