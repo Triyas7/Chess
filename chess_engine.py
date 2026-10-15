@@ -253,6 +253,7 @@ def pawn_move_valid(from_row, from_col, to_row, to_col, color):
     return False
 
 
+# check the valid move in together
 def is_valid_move(piece, to_row, to_col):
     if piece is None:
         return False
@@ -275,6 +276,51 @@ def is_valid_move(piece, to_row, to_col):
 
     return False
 
+
+# get valid move for highlight valid moves
+def get_valid_moves(selected_piece):
+    valid_moves = []
+
+    for row in range(8):
+        for col in range(8):
+            # Check basic piece movement rules
+            if is_valid_move(selected_piece, row, col):
+                # Ensure we don't land on our own pieces (friendly fire)
+                target_piece = get_piece_at(row, col)
+                if target_piece is None:
+                    valid_moves.append((row, col))
+
+    return valid_moves
+
+
+# highlight valid moves
+def highlight_moves(moves):
+    clear_highlights()
+
+    for row, col in moves:
+        # Calculate center coordinates or small circle boundaries
+        x0 = col * SQUARE_SIZE + 25
+        y0 = row * SQUARE_SIZE + 25
+        x1 = (col + 1) * SQUARE_SIZE - 25
+        y1 = (row + 1) * SQUARE_SIZE - 25
+
+        # Draw the dot and tag it as 'highlight'
+        canvas.create_oval(
+            x0,
+            y0,
+            x1,
+            y1,
+            fill="#a6a6a6",
+            outline="",
+            tags="highlight",
+        )
+
+
+# clear highlights
+def clear_highlights():
+    canvas.delete("highlight")
+
+
 # handle mouse click event
 def on_click(event, canvas, square_size):
     global selected_piece, current_turn
@@ -296,6 +342,8 @@ def on_click(event, canvas, square_size):
             return
 
         selected_piece = clicked_piece
+        valid_moves = get_valid_moves(selected_piece)
+        highlight_moves(valid_moves)
         print(f"Selected: {selected_piece.piece_name} at ({row}, {col})")
 
 
@@ -303,6 +351,8 @@ def on_click(event, canvas, square_size):
     else:
         # target pieces
         target_piece = get_piece_at(row, col)
+        # clear dots
+        clear_highlights()
 
         # check if there already a piece exist
         if target_piece is not None and target_piece.color == selected_piece.color:
@@ -320,6 +370,7 @@ def on_click(event, canvas, square_size):
                 f"Captured: {target_piece.color} {target_piece.piece_name} by {selected_piece.color} {selected_piece.piece_name}"
             )
             pieces.remove(target_piece)
+            clear_highlights()
 
         # Update position
         print(f"Moving {selected_piece.piece_name} to ({row}, {col})")
@@ -349,4 +400,8 @@ def main():
 
     root.mainloop()
 
-main()
+
+if __name__ == "__main__":
+    main()
+
+    root.mainloop()
