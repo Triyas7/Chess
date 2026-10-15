@@ -135,20 +135,16 @@ def rook_move_valid(from_row, from_col, to_row, to_col):
 
     # Horizontal move (same row, different column)
     if from_row == to_row and from_col != to_col:
-        start_row = min(from_col, to_col) + 1
-        end_row = max(from_col, to_col) - 1
-        # check if there any piece in the middle of the way
-        for col in range(start_row, end_row):
+        step = 1 if to_col > from_col else -1
+        for col in range(from_col + step, to_col, step):
             if get_piece_at(from_row, col) is not None:
                 return False
         return True
 
     # Vertical move (different row, same column)
     elif from_row != to_row and from_col == to_col:
-        start_col = min(from_row, to_row) + 1
-        end_col = max(from_row, to_row) - 1
-        # check if there any piece in the middle of the way
-        for row in range(start_col, end_col):
+        step = 1 if to_row > from_row else -1
+        for row in range(from_row + step, to_row, step):
             if get_piece_at(row, from_col) is not None:
                 return False
         return True
